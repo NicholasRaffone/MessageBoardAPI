@@ -5,12 +5,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 import hashlib
 
+hashval = '20f0cfdc8935408bb8940b47de8838a8da6fa20c98b4931fefcb59febdb23976f8b1239706b70219b46d65945fc4b6620a97dd028faf7ae2a79dfe915912cb44'
+
 class PostViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     @action(detail=False, methods=['POST'])
     def make_post(self, request):
-        hashval = '20f0cfdc8935408bb8940b47de8838a8da6fa20c98b4931fefcb59febdb23976f8b1239706b70219b46d65945fc4b6620a97dd028faf7ae2a79dfe915912cb44'
         is_admin = False
         token = "Token" in request.headers and request.headers["Token"]
         if token:
@@ -29,3 +30,17 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             return Response({'body':'not all values submitted'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(PostSerializer(p).data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['DELETE'])
+    def remove_post(self, request, pk):
+        try:
+            post = Post.objects.get(pk=pk)
+            token = "Token" in request.headers and request.headers["Token"]
+            if token:
+                hashed = hashlib.sha512(token.encode()).hexdigest()
+                if hashed==hashval:
+                    post.delete()
+                    return Response(PostSerializer(post).data, status=status.HTTP_200_OK)
+            return Response({'body':'invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+        except Post.DoesNotExist:
+            return Response({'body':'not found'}, status=status.HTTP_404_NOT_FOUND)

@@ -9,3 +9,11 @@ class Post(models.Model):
     color = models.CharField(max_length=10)
     def __str__(self):
         return self.title
+
+class Comment(models.Model):
+    text = models.TextField()
+    is_admin = models.BooleanField(default=False)
+    date = models.DateField(auto_now_add=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.text

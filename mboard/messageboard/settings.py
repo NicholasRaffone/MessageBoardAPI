@@ -61,7 +61,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'mboard.messageboard.urls'
-
+CORS_ALLOW_HEADERS = ['*']
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://nicholasraffone.github.io/MessageBoard/"

@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'messageboard.urls'
+ROOT_URLCONF = 'mboard.messageboard.urls'
 
 TEMPLATES = [
     {

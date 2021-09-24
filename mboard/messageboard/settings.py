@@ -76,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'messageboard.wsgi.application'
+WSGI_APPLICATION = 'mboard.messageboard.wsgi.application'
 
 
 # Database

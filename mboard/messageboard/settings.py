@@ -31,7 +31,7 @@ SECRET_KEY = os.getenv('DJANGO_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['messageboard-back.herokuapp.com']
 
 
 # Application definition

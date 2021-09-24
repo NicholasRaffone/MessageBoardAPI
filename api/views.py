@@ -6,19 +6,23 @@ from .serializer import CommentSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 import hashlib
+import os
+from dotenv import load_dotenv
+import smtplib
+
+load_dotenv()
 
 '''
 TODO:
-    Make request for when post is flagged
-        - send an email? probs good for notification, implement google smth
-
     Make sure start month in react is set and count up
-
-    Make Comments
-        - Flag comment -> same as flag comment
-        - Get Comments from post id
 '''
-hashval = '20f0cfdc8935408bb8940b47de8838a8da6fa20c98b4931fefcb59febdb23976f8b1239706b70219b46d65945fc4b6620a97dd028faf7ae2a79dfe915912cb44'
+hashval = os.getenv('HASH_VAL')
+gmail_user = os.getenv('EMAIL_USER')
+gmail_password = os.getenv('EMAIL_PASS')
+mail_from = gmail_user
+mail_to = gmail_user
+server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+server.login(gmail_user, gmail_password)
 
 class PostViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Post.objects.all()
@@ -65,6 +69,22 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
             posts = Post.objects.filter(date__year=int(request.data['year']),date__month=int(request.data['month']))
             return Response({'posts':[PostSerializer(post).data for post in posts]}, status=status.HTTP_200_OK)
         return Response({'body':'not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['POST'])
+    def flag_post(self, request, pk):
+        try:
+            post = Post.objects.get(pk=pk)
+            p_data = PostSerializer(post).data
+            mail_subject = 'Post Has Been Flagged'
+            mail_message = f'''Subject:{mail_subject}\n
+                Post Information\n\n{chr(10).join(
+                    f"{key}: {val}" for key,val in p_data.items()
+                )}
+            '''
+            server.sendmail(mail_from, mail_to, mail_message)
+            return Response(p_data, status=status.HTTP_200_OK)
+        except Post.DoesNotExist:
+            return Response({'body':'not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class CommentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Comment.objects.all()
@@ -118,3 +138,24 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
             comments = Comment.objects.filter(post=post.id)
             return Response({'comments':[CommentSerializer(comment).data for comment in comments]}, status=status.HTTP_200_OK)
         return Response({'body':'not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['POST'])
+    def flag_comment(self, request, pk):
+        try:
+            comment = Comment.objects.get(pk=pk)
+            c_data = CommentSerializer(comment).data
+            post = Post.objects.get(pk=c_data['post'])
+            p_data = PostSerializer(post).data
+            mail_subject = 'Comment Has Been Flagged'
+            mail_message = f'''Subject:{mail_subject}\n
+                Comment Information\n{chr(10).join(
+                    f"{key}: {val}" for key,val in c_data.items()
+                )}\n
+                Post Information\n\n{chr(10).join(
+                    f"{key}: {val}" for key,val in p_data.items()
+                )}
+            '''
+            server.sendmail(mail_from, mail_to, mail_message)
+            return Response(c_data, status=status.HTTP_200_OK)
+        except (Comment.DoesNotExist, Post.DoesNotExist):
+            return Response({'body':'not found'}, status=status.HTTP_404_NOT_FOUND)

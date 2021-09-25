@@ -62,7 +62,7 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
         except Post.DoesNotExist:
             return Response({'body':'not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['POST'])
     def get_posts_month(self, request):
         keys = ['month','year']
         if all([key in request.data.keys() for key in keys]) and all([request.data[key].isdigit() for key in keys]):
@@ -127,7 +127,7 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
         except Comment.DoesNotExist:
             return Response({'body':'not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['POST'])
     def get_comments_post(self, request):
         keys = ['post']
         if all([key in request.data.keys() for key in keys]) and all([request.data[key].isdigit() for key in keys]):

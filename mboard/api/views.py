@@ -36,16 +36,16 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
             is_admin = (hashed == hashval)
         if all([key in request.data.keys() for key in ['title','text','xpos','ypos','color']]):
             if request.data['xpos'].isdigit() and request.data['ypos'].isdigit():
-                xpos = max(min(int(request.data['xpos']),1400),0)
-                ypos = max(min(int(request.data['ypos']),824),0)
+                xpos = max(min(request.data['xpos'],1400),0)
+                ypos = max(min(request.data['ypos'],824),0)
             else:
                 return Response({'body':'xpos and ypos have to be ints'}, status=status.HTTP_400_BAD_REQUEST)
             p = Post(
                 title=request.data['title'],
                 text=request.data['text'],
                 is_admin=is_admin,
-                xpos=request.data['xpos'],
-                ypos=request.data['ypos'],
+                xpos=xpos,
+                ypos=ypos,
                 color=request.data['color']
             )
             p.save()

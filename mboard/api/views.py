@@ -44,8 +44,8 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                 title=request.data['title'],
                 text=request.data['text'],
                 is_admin=is_admin,
-                xpos=request.data['xpos'],
-                ypos=request.data['ypos'],
+                xpos=xpos,
+                ypos=ypos,
                 color=request.data['color']
             )
             p.save()

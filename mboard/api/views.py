@@ -22,7 +22,7 @@ gmail_password = os.getenv('EMAIL_PASS')
 mail_from = gmail_user
 mail_to = gmail_user
 server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-server.login(gmail_user, gmail_password)
+
 
 class PostViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Post.objects.all()
@@ -35,6 +35,11 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
             hashed = hashlib.sha512(token.encode()).hexdigest()
             is_admin = (hashed == hashval)
         if all([key in request.data.keys() for key in ['title','text','xpos','ypos','color']]):
+            if request.data['xpos'].isdigit() and request.data['ypos'].isdigit():
+                xpos = max(min(int(request.data['xpos']),1400),0)
+                ypos = max(min(int(request.data['ypos']),824),0)
+            else:
+                return Response({'body':'xpos and ypos have to be ints'}, status=status.HTTP_400_BAD_REQUEST)
             p = Post(
                 title=request.data['title'],
                 text=request.data['text'],
@@ -72,6 +77,8 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=['POST'])
     def flag_post(self, request, pk):
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.login(gmail_user, gmail_password)
         try:
             post = Post.objects.get(pk=pk)
             p_data = PostSerializer(post).data
@@ -141,6 +148,8 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=['POST'])
     def flag_comment(self, request, pk):
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.login(gmail_user, gmail_password)
         try:
             comment = Comment.objects.get(pk=pk)
             c_data = CommentSerializer(comment).data
